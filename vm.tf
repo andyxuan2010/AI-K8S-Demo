@@ -73,9 +73,9 @@ resource "azurerm_linux_virtual_machine" "vm-k8s" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
+    publisher = var.vm_os_family == "redhat" ? "RedHat" : "Canonical"
+    offer     = var.vm_os_family == "redhat" ? "RHEL" : "0001-com-ubuntu-server-jammy"
+    sku       = var.vm_os_family == "redhat" ? "9-lvm-gen2" : "22_04-lts-gen2"
     version   = "latest"
   }
 
@@ -90,8 +90,11 @@ resource "azurerm_linux_virtual_machine" "vm-k8s" {
     #public_key = azurerm_ssh_public_key.vm-pub-key.public_key
     public_key = tls_private_key.global-key.public_key_openssh
   }
-  #custom_data    = data.template_file.cloud-init.rendered
-  custom_data = base64encode(file("scripts/userdata-ubuntu.sh"))
+  custom_data = base64encode(join("", [
+    "#!/usr/bin/env bash\n",
+    "export KUBECTL_VERSION=\"v${azurerm_kubernetes_cluster.aks.kubernetes_version}\"\n",
+    file("${path.module}/scripts/userdata-linux.sh")
+  ]))
 
 
   provisioner "remote-exec" {
@@ -157,11 +160,6 @@ resource "azurerm_dns_cname_record" "api" {
   depends_on = [data.azurerm_dns_zone.argentiacapital-com]
 }
 
-
-
-data "template_file" "cloud-init" {
-  template = file("scripts/userdata-ubuntu.sh")
-}
 
 
 resource "azurerm_dns_a_record" "demo" {

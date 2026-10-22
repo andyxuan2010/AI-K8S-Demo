@@ -31,6 +31,18 @@ variable "environment" {
     error_message = "Only a valid azure names are expected here such as prod."
   }
 }
+
+variable "vm_os_family" {
+  type        = string
+  default     = "ubuntu"
+  description = "Linux distribution family for the tools VM: ubuntu or redhat (RHEL 9)."
+
+  validation {
+    condition     = contains(["ubuntu", "redhat"], var.vm_os_family)
+    error_message = "vm_os_family must be either 'ubuntu' or 'redhat'."
+  }
+}
+
 variable "emachine-pub-key" {
   default = <<EOT
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIqfriZJbopqGHXo1gVfxo7LNF7rx+Yq1qSFpLeojDS4DWr/a8v2dpevDf95Xku/BGLZ16eRQFlW4/YFfhpPIy1sYVlaJQVOiALN8sk1R5OuGjLXy2e22SRVgH0LQehHCLwmszjuLhbmDO8qjNnzm0JIYHmv4+VkZ56LI8rTiPozHmKGxgKfhKhV1vh9NzdCnj7Nh/iQWAU82X5UzYU6J6t7Ape1bp4C74yPH3NOcVcV51qKZXiamfM2PfPnU11I+Wd7Ho8l1yvpUUZe0FdSBZtp7oWya+oPy5AXJlfuMCq5WjVUO9LCvpZMsJWQDhocMFuDRiNw4+0G/XnathEiRP root@emachine

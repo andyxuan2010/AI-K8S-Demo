@@ -22,6 +22,39 @@ script_init() {
 
   log_info "Starting $SCRIPT_NAME v$SCRIPT_VERSION (pid $$)"
   log_info "Log file: $SCRIPT_LOG_FILE"
+  if ! SCRIPT_OS_FAMILY="$(detect_linux_family)"; then
+    log_error "Supported Linux distributions are Ubuntu and Red Hat family (RHEL-compatible)."
+    return 1
+  fi
+  export SCRIPT_OS_FAMILY
+  log_info "Validated Linux distribution family: $SCRIPT_OS_FAMILY"
+}
+
+detect_linux_family() {
+  local os_release_file="${OS_RELEASE_FILE:-/etc/os-release}"
+  local id id_like
+
+  if [[ ! -r "$os_release_file" ]]; then
+    log_error "Cannot read Linux distribution metadata at $os_release_file"
+    return 1
+  fi
+
+  # os-release is a shell-compatible file supplied by the operating system.
+  # shellcheck disable=SC1090
+  . "$os_release_file"
+  id="${ID:-}"
+  id_like="${ID_LIKE:-}"
+  id="${id,,}"
+  id_like="${id_like,,}"
+
+  case " $id $id_like " in
+    *" ubuntu "*) printf 'ubuntu\n' ;;
+    *" rhel "*|*" redhat "*|*" centos "*|*" rocky "*|*" almalinux "*|*" ol "*|*" fedora "*) printf 'redhat\n' ;;
+    *)
+      log_error "Unsupported Linux distribution: ${PRETTY_NAME:-${ID:-unknown}}"
+      return 1
+      ;;
+  esac
 }
 
 log_info() {

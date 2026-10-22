@@ -29,7 +29,7 @@ dolly-v2-3b is a 2.8 billion parameter causal language model created by Databric
     b. create acr
     c. create role
     d. generate ssh keys
-    d. initialize vm with userdata-ubuntu.sh
+    d. initialize VM with `scripts/userdata-linux.sh` (Ubuntu or Red Hat family)
     f. install ssh key with 3 provisioner
     g. install kubectl
     h. copy/upload k8s files
@@ -64,10 +64,14 @@ Repository shell scripts use Bash strict mode, version `1.0.0`, timestamped outp
 and an error trap that reports the failing line and exit status. Standard script
 output and errors are appended to `~/.local/state/ai-k8s-demo/logs/` (or the
 equivalent path under `XDG_STATE_HOME`). Set `SCRIPT_LOG_DIR` to choose another
-log directory. The VM bootstrap script logs to `/var/log/aks-vm-bootstrap.log`;
-set `BOOTSTRAP_LOG_FILE` to override that path.
+log directory. The Linux VM bootstrap supports Ubuntu and Red Hat family distributions
+and logs to `/var/log/aks-vm-bootstrap.log`; set `BOOTSTRAP_LOG_FILE` to override it.
 
 Scripts in `scripts/` share logging and error helpers from `scripts/lib/common.sh`.
 The bootstrap script is self-contained because Terraform passes it to the VM as
 custom data. The older deployment entry point is `k8s/run.sh`.
+
+Terraform provisions Ubuntu by default. Set `vm_os_family = "redhat"` to use
+the Azure Marketplace RHEL 9 Gen2 image. Terraform passes the AKS cluster version
+to the bootstrap so its `kubectl` client matches the cluster minor version.
 
