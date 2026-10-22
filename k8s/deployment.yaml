@@ -6,7 +6,7 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: dolly-api-deploy
+      app: dolly-api
   template:
     metadata:
       labels:
