@@ -1,5 +1,45 @@
-#!/bin/bash
-set -x
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+SCRIPT_VERSION="1.0.0"
+SCRIPT_NAME="userdata-ubuntu"
+SCRIPT_LOG_FILE="${BOOTSTRAP_LOG_FILE:-/var/log/aks-vm-bootstrap.log}"
+mkdir -p -- "$(dirname -- "$SCRIPT_LOG_FILE")"
+touch "$SCRIPT_LOG_FILE"
+chmod 600 "$SCRIPT_LOG_FILE"
+exec > >(tee -a "$SCRIPT_LOG_FILE") 2>&1
+
+log_info() {
+  printf '[%s] [INFO] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"
+}
+
+log_error() {
+  printf '[%s] [ERROR] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" >&2
+}
+
+script_error_handler() {
+  local status="$1"
+  local line="$2"
+  trap - ERR
+  log_error "$SCRIPT_NAME v$SCRIPT_VERSION failed at line $line (exit $status)"
+  exit "$status"
+}
+
+script_exit_handler() {
+  local status="$1"
+  if [[ "$status" -eq 0 ]]; then
+    log_info "Completed $SCRIPT_NAME v$SCRIPT_VERSION successfully"
+  else
+    log_error "$SCRIPT_NAME v$SCRIPT_VERSION exited with status $status"
+  fi
+}
+
+trap 'script_error_handler "$?" "$LINENO"' ERR
+trap 'script_exit_handler "$?"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+log_info "Starting $SCRIPT_NAME v$SCRIPT_VERSION (pid $$)"
+log_info "Log file: $SCRIPT_LOG_FILE"
 
 ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
 
@@ -20,6 +60,7 @@ echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIqfriZJbopqGHXo1gVfxo7LNF7rx+Yq1qSF
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjoftGI4Wgwc6YHGgbbUfAkMm2k4JQIkMXmlHrs24bnSa+CxNeC4eL7cFWZHgLxn6pBfqRCijsCbLpzUhlIJKMMxv2WB0TtHpezD9oUX1/9K7rC3RB4EcKmZ3vDWSsR4UBn9aVCZkQBnr+hfk39lj+Hk2qAMGloVFD0bM10j1Hhv5uMaT8lcClWK/TCcgKH8NQF3hZDqX8YADCYczvZ7B3hA+xpAZwOOZKChOv5Y2ABduD8KPcV6Uc1VLO6+xMlkDZc0MB6HkYlGZSbeMkstgPo+275SKHWVJ7B2nWMvOAyOtjU5OqHwYoNrsCX1TP380DUhQqqAqjzqDP8C0z76Gj root@vm" >> /home/azuser/.ssh/authorized_keys
 
 
+log_info "Updating Ubuntu packages and installing VM tools"
 apt-get update -y
 apt-get upgrade -y
 
@@ -64,17 +105,19 @@ source /root/.bashrc
 
 ###
 #install k8s ingress controller
+log_info "Installing Kubernetes ingress controller and dashboard"
 su - azuser -c "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/cloud/deploy.yaml"
 ##install k8s dashboard
 su - azuser -c "kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml"
 
 
 # install helm package
+log_info "Installing Helm and deploying the demo NGINX service"
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
 apt-get install apt-transport-https --yes
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
 apt-get update
-apt-get install helm
+apt-get install -y helm
 
 # deploy demo nginx server to k8s
 su - azuser -c "cd k8s; kubectl apply -f nginx-deployment.yaml -f nginx-service.yaml -f nginx-ingress.yaml" 

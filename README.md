@@ -58,3 +58,16 @@ andyxuan2010/dolly-api:v1.2  tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
 6. existing issue
 
+## Shell scripts
+
+Repository shell scripts use Bash strict mode, version `1.0.0`, timestamped output,
+and an error trap that reports the failing line and exit status. Standard script
+output and errors are appended to `~/.local/state/ai-k8s-demo/logs/` (or the
+equivalent path under `XDG_STATE_HOME`). Set `SCRIPT_LOG_DIR` to choose another
+log directory. The VM bootstrap script logs to `/var/log/aks-vm-bootstrap.log`;
+set `BOOTSTRAP_LOG_FILE` to override that path.
+
+Scripts in `scripts/` share logging and error helpers from `scripts/lib/common.sh`.
+The bootstrap script is self-contained because Terraform passes it to the VM as
+custom data. The older deployment entry point is `k8s/run.sh`.
+
