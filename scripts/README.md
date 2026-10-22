@@ -2,6 +2,9 @@
 
 This folder contains versioned Bash scripts for AKS operations and Linux VM
 bootstrap. The scripts target Ubuntu and Red Hat family Linux distributions.
+PowerShell equivalents use the `.ps1` extension and run with PowerShell 7 on
+Windows or Linux, where the required Azure, Docker, Kubernetes, and Linux tools
+are installed.
 
 ## Usage and conventions
 
@@ -63,3 +66,20 @@ override the installed versions.
 
 The legacy [Kubernetes deploy entry point](../k8s/run.sh) builds and pushes an
 image and applies the API manifests from the `k8s/` directory.
+
+## PowerShell equivalents
+
+Each executable Bash script has a PowerShell counterpart with the same basename
+and `.ps1` extension. For example:
+
+```powershell
+./scripts/aks-deploy-api.ps1 -help
+./scripts/aks-deploy-api.ps1
+```
+
+[`common.ps1`](common.ps1) provides shared `--help` handling, input validation,
+timestamped logs, and native command exit-code handling. PowerShell logs use the
+same `SCRIPT_LOG_DIR` override and default state directory as the Bash scripts.
+[`userdata-linux.ps1`](userdata-linux.ps1) is the PowerShell Core equivalent of
+the VM bootstrap and must run as root on the target Linux VM. The legacy
+[`k8s/run.ps1`](../k8s/run.ps1) mirrors `k8s/run.sh`.
