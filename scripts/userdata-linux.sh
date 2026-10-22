@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
+# Script: userdata-linux.sh
+# Version: 1.1.0
+# Summary: Bootstraps an Ubuntu or Red Hat family VM with container and Kubernetes tools.
+# Usage: userdata-linux.sh
+# Inputs: Optional BOOTSTRAP_LOG_FILE, KUBECTL_VERSION, and HELM_VERSION environment variables.
 set -Eeuo pipefail
 
-SCRIPT_VERSION="1.0.0"
+SCRIPT_VERSION="1.1.0"
 SCRIPT_NAME="userdata-linux"
 SCRIPT_LOG_FILE="${BOOTSTRAP_LOG_FILE:-/var/log/aks-vm-bootstrap.log}"
+SCRIPT_USAGE='Usage: userdata-linux.sh'
+if [[ "$#" -eq 1 && ( "$1" == "-h" || "$1" == "--help" ) ]]; then
+  printf '%s\n' "$SCRIPT_USAGE"
+  exit 0
+fi
 mkdir -p -- "$(dirname -- "$SCRIPT_LOG_FILE")"
 touch "$SCRIPT_LOG_FILE"
 chmod 600 "$SCRIPT_LOG_FILE"
@@ -39,6 +49,11 @@ trap 'script_exit_handler "$?"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 log_info "Starting $SCRIPT_NAME v$SCRIPT_VERSION (pid $$)"
+if [[ "$#" -ne 0 ]]; then
+  log_error 'Invalid number of arguments.'
+  log_error "$SCRIPT_USAGE"
+  exit 2
+fi
 log_info "Log file: $SCRIPT_LOG_FILE"
 
 detect_linux_family() {
@@ -73,6 +88,19 @@ if [[ "$OS_FAMILY" == "ubuntu" ]]; then
 else
   SSH_SERVICE="sshd"
 fi
+
+KUBECTL_VERSION="${KUBECTL_VERSION:-v1.26.3}"
+HELM_VERSION="${HELM_VERSION:-v4.3.1}"
+if [[ ! "$KUBECTL_VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  log_error "KUBECTL_VERSION must use a semantic version such as v1.26.3."
+  exit 2
+fi
+if [[ ! "$HELM_VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  log_error "HELM_VERSION must use a semantic version such as v4.3.1."
+  exit 2
+fi
+[[ "$KUBECTL_VERSION" == v* ]] || KUBECTL_VERSION="v$KUBECTL_VERSION"
+[[ "$HELM_VERSION" == v* ]] || HELM_VERSION="v$HELM_VERSION"
 
 case "$(uname -m)" in
   x86_64|amd64) K8S_ARCH="amd64"; HELM_ARCH="amd64"; AWS_ARCH="x86_64" ;;
@@ -133,14 +161,14 @@ install_aws_cli() {
 }
 
 install_kubectl() {
-  local version="${KUBECTL_VERSION:-v1.26.3}"
+  local version="$KUBECTL_VERSION"
   log_info "Installing kubectl $version for linux/$K8S_ARCH"
   curl -fsSL "https://dl.k8s.io/release/${version}/bin/linux/${K8S_ARCH}/kubectl" -o /usr/local/bin/kubectl
   chmod 0755 /usr/local/bin/kubectl
 }
 
 install_helm() {
-  local version="${HELM_VERSION:-v4.3.1}"
+  local version="$HELM_VERSION"
   local work_dir
   work_dir="$(mktemp -d -t aks-helm.XXXXXX)"
   log_info "Installing Helm $version for linux/$HELM_ARCH"

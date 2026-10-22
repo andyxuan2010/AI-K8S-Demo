@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
+# Script: aks-cleanup-demo.sh
+# Version: 1.1.0
+# Summary: Deletes Dolly API and demo NGINX resources from the selected namespace.
+# Usage: aks-cleanup-demo.sh
+# Inputs: Optional K8S_NAMESPACE environment variable.
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
-script_init '1.0.0' 'aks-cleanup-demo'
+script_init '1.1.0' 'aks-cleanup-demo'
+
+SCRIPT_USAGE='Usage: aks-cleanup-demo.sh'
+handle_help "$@"
+validate_arg_count 0 0 "$@"
 
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 K8S_DIR="$REPO_ROOT/k8s"

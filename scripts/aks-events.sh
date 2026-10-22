@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
+# Script: aks-events.sh
+# Version: 1.1.0
+# Summary: Lists the most recent events in a Kubernetes namespace.
+# Usage: aks-events.sh
+# Inputs: Optional K8S_NAMESPACE and EVENT_LIMIT environment variables.
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
-script_init '1.0.0' 'aks-events'
+script_init '1.1.0' 'aks-events'
+
+SCRIPT_USAGE='Usage: aks-events.sh'
+handle_help "$@"
+validate_arg_count 0 0 "$@"
 
 NAMESPACE="${K8S_NAMESPACE:-default}"
 EVENT_LIMIT="${EVENT_LIMIT:-50}"
-if [[ ! "$EVENT_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
-  log_error "EVENT_LIMIT must be a positive integer."
-  exit 2
-fi
+validate_positive_integer EVENT_LIMIT "$EVENT_LIMIT"
 
 require_command kubectl
 require_command tail

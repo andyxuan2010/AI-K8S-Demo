@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
+# Script: aks-preflight-check.sh
+# Version: 1.1.0
+# Summary: Checks cluster access, namespace availability, and server-side manifest validation.
+# Usage: aks-preflight-check.sh
+# Inputs: Optional K8S_NAMESPACE environment variable.
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
-script_init '1.0.0' 'aks-preflight-check'
+script_init '1.1.0' 'aks-preflight-check'
+
+SCRIPT_USAGE='Usage: aks-preflight-check.sh'
+handle_help "$@"
+validate_arg_count 0 0 "$@"
 
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 NAMESPACE="${K8S_NAMESPACE:-default}"
