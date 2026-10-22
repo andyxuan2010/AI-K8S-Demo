@@ -71,6 +71,23 @@ Scripts in `scripts/` share logging and error helpers from `scripts/lib/common.s
 The bootstrap script is self-contained because Terraform passes it to the VM as
 custom data. The older deployment entry point is `k8s/run.sh`.
 
+Additional AKS operations scripts:
+
+- `aks-preflight-check.sh` validates cluster access and server-side checks the Kubernetes manifests.
+- `aks-api-logs.sh` follows or displays recent Dolly API logs (`FOLLOW=false` disables following).
+- `aks-watch-pods.sh` watches pods in `K8S_NAMESPACE`; set `POD_SELECTOR` to filter them.
+- `aks-events.sh` displays recent namespace events (`EVENT_LIMIT` sets the number shown).
+- `aks-rollout-history.sh` displays deployment rollout revisions and details.
+- `aks-rollback-api.sh` rolls the Dolly API deployment back, optionally to a specified revision.
+- `aks-update-api-image.sh` updates a deployment image and waits for rollout completion.
+- `aks-port-forward-api.sh` forwards a local port to the Dolly API service.
+- `aks-ingress-logs.sh` follows or displays ingress controller logs.
+- `aks-resource-usage.sh` displays node, pod, and HPA resource information; metrics-server is required for `kubectl top`.
+
+All AKS operation scripts accept `K8S_NAMESPACE` (the ingress log script also accepts
+`INGRESS_NAMESPACE`). They require `kubectl` and a configured context with the relevant
+cluster permissions.
+
 Terraform provisions Ubuntu by default. Set `vm_os_family = "redhat"` to use
 the Azure Marketplace RHEL 9 Gen2 image. Terraform passes the AKS cluster version
 to the bootstrap so its `kubectl` client matches the cluster minor version.
