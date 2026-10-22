@@ -152,6 +152,9 @@ function Invoke-ManagedScript {
       Write-ScriptLog -Level INFO -Message $Usage
       return
     }
+    if ($Arguments.Count -eq 0 -and $MinimumArguments -eq 0) {
+      Write-ScriptLog -Level INFO -Message $Usage
+    }
     Assert-ArgumentCount -Minimum $MinimumArguments -Maximum $MaximumArguments -Arguments $Arguments -Usage $Usage
     & $Action $Arguments
     Write-ScriptLog -Level INFO -Message "Completed $Name v$Version successfully"

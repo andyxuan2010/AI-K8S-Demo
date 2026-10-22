@@ -114,6 +114,9 @@ validate_arg_count() {
   shift 2
   local count="$#"
 
+  if (( count == 0 && minimum == 0 )); then
+    script_usage
+  fi
   if (( count < minimum || count > maximum )); then
     log_error "Invalid number of arguments."
     script_usage >&2

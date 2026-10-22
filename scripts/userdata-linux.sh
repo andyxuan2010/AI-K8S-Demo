@@ -49,6 +49,9 @@ trap 'script_exit_handler "$?"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 log_info "Starting $SCRIPT_NAME v$SCRIPT_VERSION (pid $$)"
+if [[ "$#" -eq 0 ]]; then
+  log_info "$SCRIPT_USAGE"
+fi
 if [[ "$#" -ne 0 ]]; then
   log_error 'Invalid number of arguments.'
   log_error "$SCRIPT_USAGE"

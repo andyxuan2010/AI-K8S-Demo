@@ -11,8 +11,10 @@ the legacy deployment entry points in `k8s/`.
   and, for the VM bootstrap, Linux package and service tools).
 - AKS scripts use the active `kubectl` context. `K8S_NAMESPACE` defaults to
   `default`; rollout operations use `ROLLOUT_TIMEOUT=300s` by default.
-- Every executable supports `-h` and `--help`. It validates its arguments and
-  relevant environment inputs before making changes.
+- Every executable supports `-h` and `--help`. When run without positional
+  arguments, it prints its usage line. Scripts that allow zero arguments then
+  continue with their documented defaults; scripts that require arguments
+  report the input error, print usage, and exit with status 2.
 - Bash output and PowerShell log messages are timestamped. Logs default to
   `~/.local/state/ai-k8s-demo/logs/`; set `SCRIPT_LOG_DIR` to select another
   directory. The Bash VM bootstrap defaults to
