@@ -94,7 +94,46 @@ All AKS operation scripts accept `K8S_NAMESPACE` (the ingress log script also ac
 `INGRESS_NAMESPACE`). They require `kubectl` and a configured context with the relevant
 cluster permissions.
 
-Terraform provisions Ubuntu by default. Set `vm_os_family = "redhat"` to use
-the Azure Marketplace RHEL 9 Gen2 image. Terraform passes the AKS cluster version
-to the bootstrap so its `kubectl` client matches the cluster minor version.
+The environment tfvars file selects Ubuntu by default. Set `vm_os_family = "redhat"`
+to use the configured Azure Marketplace RHEL 9 Gen2 image. Terraform passes the
+AKS cluster version to the bootstrap so its `kubectl` client matches the cluster
+minor version.
+
+The root `main.tf` composes the shared resource group, VNet/subnet, NSG, and AKS
+modules from `andyxuan2010/azure-template`. The jumpbox stays as root resources
+because the template Linux VM module depends on shared Key Vault and storage
+resources that this demo does not provision. Resource inputs are kept in each
+environment's `terraform.tfvars`; variable declarations remain in `variables.tf`.
+
+## Terraform environments
+
+The dev environment follows the repository's environment-file layout:
+
+- `environments/dev/backend.hcl` contains the Azure Storage backend settings.
+- `environments/dev/terraform.tfvars` contains the dev environment inputs.
+- Only dev currently has a populated environment variable file. Add a matching
+  `terraform.tfvars` under another environment directory before planning there.
+
+Terraform backend settings cannot be supplied through ordinary input variables,
+so initialize with the backend file and supply the variable file to plan/apply:
+
+```bash
+terraform init -reconfigure -backend-config="environments/dev/backend.hcl"
+terraform plan -var-file="environments/dev/terraform.tfvars"
+terraform apply -var-file="environments/dev/terraform.tfvars"
+```
+
+Replace `network_security_rules.SSH.source_address_prefix` in the environment
+tfvars with a trusted public IPv4 CIDR (`/24` or narrower, preferably your public
+IP with `/32`) before planning. The checked-in public SSH keys are public key material; do not
+put private keys or Azure credentials in the tfvars file. Provider versions are
+recorded in `.terraform.lock.hcl`.
+
+DNS integration is disabled for dev because the previous `argentiacapital.com`
+Azure DNS zone is unavailable. With `dns_zone.enabled = false`, Terraform skips
+the zone lookup and DNS record resources, and DNS-related outputs are `null`. To
+use a replacement zone, set `dns_zone.enabled = true` and fill in its existing
+zone name, resource group, and the three DNS A-record IPv4 targets in the dev
+tfvars file. Disabling DNS will remove any DNS records still managed in Terraform
+state on the next apply.
 

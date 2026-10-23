@@ -11,8 +11,11 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-*.auto.tfvars
-*.auto.tfvars.json
+*.tfvars
+*.tfvars.json
+!*.example.tfvars
+!*.example.tfvars.json
+!environments/dev/terraform.tfvars
 *.tfvars.local
 # Keep .terraform.lock.hcl tracked for reproducible provider installs.
 
@@ -22,6 +25,7 @@ credentials
 *id_rsa
 id_rsa*
 **/k8s/.kube/*
+!k8s/.kube/.gitkeep
 
 # Local development environments and editor settings
 **/venv/*
