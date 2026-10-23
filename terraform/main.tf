@@ -170,7 +170,7 @@ resource "azurerm_linux_virtual_machine" "vm-k8s" {
   custom_data = base64encode(join("", [
     "#!/usr/bin/env bash\n",
     "export KUBECTL_VERSION=\"v${module.aks.kubernetes_version}\"\n",
-    file("${path.module}/${var.virtual_machine_user_data_script}")
+    file("${path.module}/../${var.virtual_machine_user_data_script}")
   ]))
 
   provisioner "remote-exec" {

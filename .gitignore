@@ -15,7 +15,7 @@ override.tf.json
 *.tfvars.json
 !*.example.tfvars
 !*.example.tfvars.json
-!environments/dev/terraform.tfvars
+!terraform/environments/dev/terraform.tfvars
 *.tfvars.local
 # Keep .terraform.lock.hcl tracked for reproducible provider installs.
 
