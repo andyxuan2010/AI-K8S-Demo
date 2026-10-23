@@ -21,20 +21,39 @@ override.tf.json
 
 # Credentials and local secrets
 credentials
+**/.azure/
 .env
+.env.*
+*.env
+!.env.example
+!.env.template
 *id_rsa
 id_rsa*
+*.pem
+*.p12
+*.pfx
+*.key
 **/k8s/.kube/*
 !k8s/.kube/.gitkeep
 
 # Local development environments and editor settings
-**/venv/*
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
 .vscode/
+.idea/
+.vs/
 
-# Python bytecode and caches
+# Generated logs, Python bytecode, and caches
+*.log
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Operating-system files
 .DS_Store
 Thumbs.db
+Desktop.ini

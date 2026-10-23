@@ -129,6 +129,21 @@ IP with `/32`) before planning. The checked-in public SSH keys are public key ma
 put private keys or Azure credentials in the tfvars file. Provider versions are
 recorded in `terraform/.terraform.lock.hcl`.
 
+## Local files and secrets
+
+The root `.gitignore` excludes Terraform working data, state and plan files,
+local override files, generated logs, local Azure CLI credentials, `.env` files,
+SSH/TLS private keys and certificates, and kubeconfig files under `k8s/.kube/`.
+It also ignores local Python virtual environments and caches, editor settings,
+and operating-system files. `.env.example` and `.env.template` files are allowed
+for safe configuration examples.
+
+Most `*.tfvars` files are ignored. The dev file
+`terraform/environments/dev/terraform.tfvars` is intentionally tracked, so keep
+Azure credentials, passwords, tokens, and private keys out of it. Store secrets
+in an approved local credential store or CI secret store. The Terraform lock
+file is intentionally tracked to keep provider selections reproducible.
+
 DNS integration is disabled for dev because the previous `argentiacapital.com`
 Azure DNS zone is unavailable. With `dns_zone.enabled = false`, Terraform skips
 the zone lookup and DNS record resources, and DNS-related outputs are `null`. To
